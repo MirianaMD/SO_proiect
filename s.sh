@@ -2,15 +2,19 @@
 
 functie()
 {
+    if [ "$#" -ne 1 ]; then
+	echo "Nr incorect arg"
+	exit 1
+    fi
     caracter=$1;
+    count=0;
     while  read -r line;
     do
-	echo "$line" | grep -E "^[A-Z][A-Za-z0-9 ,.!?]*[.!?]$" | grep -v ",si" | grep -E -c $caracter 
-	if [ $? -eq 0 ]
+	if((echo "$line" | grep -E "^[A-Z][A-Za-z0-9 ,.!?]*[.!?]$" | grep -v ",si" | grep -E -c $caracter)>0) 
 	then
             ((count++))
 	fi
     done
-    echo $count
+    echo "$count"
 }
 functie $1
