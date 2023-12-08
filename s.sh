@@ -3,7 +3,7 @@
 functie()
 {
     if [ "$#" -ne 1 ]; then
-	echo "Nr incorect arg"
+	echo "Nr incorect de argumente!"
 	exit 1
     fi
     caracter=$1;

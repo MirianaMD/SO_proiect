@@ -62,43 +62,7 @@ void asteapt_procesul(char *director_out)
     {
       if(WIFEXITED(status))
 	{
-	  printf("S-a incheiat procesul cu pid-ul %d si codul 1. Nr de linii scrise e: %d.\n",pid,WEXITSTATUS(status));//putem pune in comentariu asta ca textul oricum se scrie in fisier
-	  // char text[500]={}, nts[100]={};
-	  // sprintf(nts, "S-a incheiat procesul cu pid-ul %d", pid);
-	  // strcat(text,nts);
-	  // strcat(text," si codul 1. ");
-	  // strcat(text,"Nr de linii este: ");
-	  // sprintf(nts, "%d.\n", WEXITSTATUS(status));
-	  // strcat(text,nts);
-
-	  // char numele[500]={};
-	  // strcpy(numele,director_out);
-	  // strcat(numele,"/");
-	  // strcat(numele,"statistica.txt");
-	  // char* out =numele;
-	  // int out_fd;
-	  // out_fd=open(out, O_WRONLY | O_CREAT | O_APPEND, S_IWUSR | S_IWGRP | S_IWOTH | S_IRUSR | S_IRGRP | S_IROTH);
-	  // if(out_fd == -1)
-	  //   {
-	  //     perror("error open statisitci.txt in modul de scriere / citire");
-	  //     exit(1);
-	  //   }
-	  // struct stat st_st;
-	  // if(stat(out,&st_st) == -1)
-	  //   {
-	  //     perror("out(statistici.txt) stat error");
-	  //     exit(1);
-	  //   }
-	  // if(write(out_fd,text,strlen(text))==-1)
-	  //   {
-	  //     perror("error scriere file");
-	  //     exit(1);
-	  //   }
-	  // if(close(out_fd)==-1)
-	  //   {
-	  //     perror("error close statistici");
-	  //     exit(1);
-	  //   }
+	  printf("S-a incheiat procesul cu pid-ul %d si codul %d. Nr de linii scrise e: %d.\n",pid,WEXITSTATUS(status),WEXITSTATUS(status));//putem pune in comentariu asta ca textul oricum se scrie in fisier
 	}
       else
 	{
@@ -299,8 +263,7 @@ void citire_director(char *director_in, char *director_out, char *caracter)
 	      perror("stat legatura error");
 	      exit(1);
 	    }
-	  //_______________________________________________________________________________________________________________________________
-	  
+	  //____________________________________________________________de aici incep cu procesele si tot	  
 	  if(S_ISDIR(st_file.st_mode))//verificam daca e director
 	    {
 	      pid_t pid = fork();
@@ -370,7 +333,7 @@ void citire_director(char *director_in, char *director_out, char *caracter)
 			      exit(1);
 			    }
 			  int lungime;
-			  int inaltime;;
+			  int inaltime;
       
 			  lseek(fd, 18, SEEK_SET);
 
@@ -405,12 +368,11 @@ void citire_director(char *director_in, char *director_out, char *caracter)
 			      unsigned char ro_gal_albas[3];
 			      if(read(fd,ro_gal_albas,sizeof(ro_gal_albas))!=sizeof(ro_gal_albas))
 				{
-				  printf("%s\n",entry->d_name);
 				  perror("error citire pixels");
 				  exit(1);
 				}
 			      unsigned char gri=0.299*ro_gal_albas[0]+0.587*ro_gal_albas[1]+0.114*ro_gal_albas[2];
-			      lseek(fd,-3,SEEK_CUR);
+			      lseek(fd,54+i*3,SEEK_SET);
 			      write(fd,&gri,sizeof(gri));
 			      write(fd,&gri,sizeof(gri));
 			      write(fd,&gri,sizeof(gri));
@@ -442,7 +404,7 @@ void citire_director(char *director_in, char *director_out, char *caracter)
 			{
 			  close(pfd[0]);//inchid capul de cit ca eu scriu in pipe ce e in fisi
 			  cerinte_fisier(path, nume, &st_file, director_out);
-			  //citirea pipe 1
+			  //citirea in pipe 1
 			  char *file=path;//fisierul din care luam datele
 			  int fd;
 			  fd=open(file,O_RDONLY);
@@ -495,22 +457,18 @@ void citire_director(char *director_in, char *director_out, char *caracter)
 		      close(pfd[0]);
 		      close(pfd[1]);
 		     
-		      close(pfd2[1]);//inchid scriere
-		      
+		      close(pfd2[1]);//inchid scriere		      
 		      //aici folosim ce e in pipe 2.
-		      //printf("ajunge si aici\n");
-		      //chestia cu pipe 2
 		      /*
 		      //citire pipe 2 si calcularea nr de linii corecte per total
 		      char buff[1024]={};
 		      while(read(pfd2[0],buff,sizeof(buff))>0)
 			{
-			  //printf("imhhhh %s",buff);//aici are \n de la el!!!!!
 			  //printf("%s - ca nr: %d\n",entry->d_name,atoi(buff));
 			  sum_nr_linii_corecte=sum_nr_linii_corecte + atoi(buff);
 			}
 		      */
-		      //alta metoda de a face asta: citire pipe 2 si calcularea nr de linii corecte per total
+		      //alta metoda de a face asta: citire pipe 2 si calcularea nr de linii corecte per total		      
 		      int nr=0;
 		      FILE *stream;
 		      stream=fdopen(pfd2[0],"r");
@@ -519,8 +477,8 @@ void citire_director(char *director_in, char *director_out, char *caracter)
 			{
 			  //suma nr de linii corecte
 			  sum_nr_linii_corecte=sum_nr_linii_corecte + nr;
-			  printf("%s - %d\n",entry->d_name,nr);
-			}  		      	
+			  //printf("%s - %d\n",entry->d_name,nr);
+			}		      	
 		      close(pfd2[0]);
 		    }
 		}
@@ -536,7 +494,6 @@ void citire_director(char *director_in, char *director_out, char *caracter)
   asteapt_procesul(director_out);
 }
       
-
 int main(int argc, char *argv[])
 {
   if(argc!=4)//verificam daca am primit cele trei argumente, nu mai multe, nu mai putine
